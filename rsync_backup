@@ -1,0 +1,73 @@
+#!/bin/sh
+
+
+RSYNC=/usr/bin/rsync
+RRSYNCUSER=pi
+RHOST=raspberrypi.fritz.box
+
+#SSH=/usr/bin/ssh
+#RSSHUSER=pi
+#RPORT=22
+
+BW=10000    #in KBps, then 50 it is 400 Kbps. RPI reaches up to 1MBps. 10Mbps is just a theorical limitation, in case I move it somewhere else in the future, and I do not want to compromise the local PC or network. 
+LOGFILE=/home/$USER/rsync.log
+
+# Compression option (z) not used because compression of video files is not efficient enough
+# -a: equals -rlptgoD 
+# -r: recursive
+# -l: copy links
+# -p: preserve permissions
+# -t: preserve modification times
+# -g/-o: preserve group/owner
+# -D: preserve device files and special files
+# -h: human-readable
+# --delete: to delete extra files in remote target
+# --partial: to keep partial files if rsync stops. It helps for huge files
+# -L: convert links
+# --modify-window=NUM     compare mod-times with reduced accuracy (FAT32 has different timestamp accuracy)
+
+# if not specified, RSYNC assumes SSH. I use rsa private/public keys to avoid password prompt. 
+COMMAND="$RSYNC -rthL --log-file=$LOGFILE --delete --partial --bwlimit=$BW --modify-window=2" 
+
+# others tests I did with David: 
+#$RSYNC -az -e "$SSH -l $KEY" $RUSER@$RHOST:$RPATH $LPATH 
+#$RSYNC -rth --progress --log-file=/mnt/USB/ --partial --append --bwlimit=$BW -e "$SSH -p $RPORT -l $RSSHUSER -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $RRSYNCUSER@$RHOST:$RPATH $LPATH
+# the one I used with David: 
+#$RSYNC -rth --log-file=/home/$USER/Desktop/rsync.log --partial --append --bwlimit=$BW -e "$SSH -p $RPORT -l $RSSHUSER -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
+
+sleep 1
+rm $LOGFILE
+echo "PENDIENTE" >> $LOGFILE
+
+# some relax time after computer startup
+sleep 30
+
+echo "EMPEZANDO" >> $LOGFILE
+
+error=0
+ping -c 3 $RHOST > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+	error=`expr $error + $?`
+	echo "CANCELADO: RPI ESTÁ APAGADO" >> $LOGFILE
+	exit
+fi
+
+
+LPATH=/home/$USER/Dropbox/
+RPATH=/mnt/USB/backups/Dropbox
+$COMMAND $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
+error=`expr $error + $?`
+
+LPATH=/home/$USER/DATOS/
+RPATH=/mnt/USB/backups/Amador
+$COMMAND $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
+error=`expr $error + $?`
+
+if [ "$error" = "0" ]
+then
+	echo "FINALIDO CORRECTAMENTE" >> $LOGFILE
+else
+	echo "FINALIZADO CON ERRORES, log: $LOGFILE" >> $LOGFILE
+fi
+
