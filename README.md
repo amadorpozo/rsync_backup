@@ -43,6 +43,6 @@ Comment=rsync backup running in background
 I used Conky, a tool that integrates  useful information on your Desktop as a widget (http://conky.sourceforge.net/screenshots.html). The specific script that I used is available [here](https://raw.githubusercontent.com/amadorpozo/conky_config_files/master/Gotham_pozo)
 The line to display the result is:
 ```
-${color FFA300}Estado del backup: $color ${execi 5 tail -n 1 /home/pozo/rsync.log}
+${color FFA300}Estado del backup: $color ${execi 5 tail -n 1 /home/$USER/rsync.log}
 ```
 More details [here](https://github.com/amadorpozo/conky_config_files)
