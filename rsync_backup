@@ -3,7 +3,7 @@
 
 RSYNC=/usr/bin/rsync
 RRSYNCUSER=pi
-RHOST=raspberrypi.fritz.box
+RHOST=rpi
 
 #SSH=/usr/bin/ssh
 #RSSHUSER=pi
@@ -27,7 +27,7 @@ LOGFILE=/home/$USER/rsync.log
 # --modify-window=NUM     compare mod-times with reduced accuracy (FAT32 has different timestamp accuracy)
 
 # if not specified, RSYNC assumes SSH. I use rsa private/public keys to avoid password prompt. 
-COMMAND="$RSYNC -rthL --log-file=$LOGFILE --delete --partial --bwlimit=$BW --modify-window=2" 
+COMMAND="$RSYNC -rthL --log-file=$LOGFILE --delete --partial --bwlimit=$BW --modify-window=2 " 
 
 # others tests I did with David: 
 #$RSYNC -az -e "$SSH -l $KEY" $RUSER@$RHOST:$RPATH $LPATH 
@@ -54,15 +54,29 @@ then
 fi
 
 
-LPATH=/home/$USER/Dropbox/
-RPATH=/mnt/USB/backups/Dropbox
+LPATH=/media/$USER/nuc-2TB/series/
+RPATH=/mnt/USB/series
 $COMMAND $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
 error=`expr $error + $?`
 
-LPATH=/home/$USER/DATOS/
-RPATH=/mnt/USB/backups/Amador
+
+LPATH=/media/$USER/nuc-2TB/pelis/
+RPATH=/mnt/USB/pelis
 $COMMAND $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
 error=`expr $error + $?`
+
+
+LPATH=/media/$USER/nuc-2TB/Musica/
+RPATH=/mnt/USB/Musica
+$COMMAND $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
+error=`expr $error + $?`
+
+
+LPATH=/media/$USER/nuc-2TB/libros/
+RPATH=/mnt/USB/libros
+$COMMAND $LPATH $RRSYNCUSER@$RHOST:"$RPATH"
+error=`expr $error + $?`
+
 
 if [ "$error" = "0" ]
 then
