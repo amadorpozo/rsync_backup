@@ -11,6 +11,7 @@ RHOST=rpi
 
 BW=10000    #in KBps, then 50 it is 400 Kbps. RPI reaches up to 1MBps. 10Mbps is just a theorical limitation, in case I move it somewhere else in the future, and I do not want to compromise the local PC or network. 
 LOGFILE=/home/$USER/rsync.log
+STAMPFILE=/home/$USER/rsync.stamps
 
 # Compression option (z) not used because compression of video files is not efficient enough
 # -a: equals -rlptgoD 
@@ -49,7 +50,7 @@ ping -c 3 $RHOST > /dev/null 2>&1
 if [ $? -ne 0 ]
 then
 	error=`expr $error + $?`
-	echo "CANCELADO: RPI ESTÁ APAGADO" >> $LOGFILE
+	echo "CANCELADO: RPI OFF. Last backup $(cat $STAMPFILE)" >> $LOGFILE
 	exit
 fi
 
@@ -81,6 +82,7 @@ error=`expr $error + $?`
 if [ "$error" = "0" ]
 then
 	echo "FINALIDO CORRECTAMENTE" >> $LOGFILE
+	echo $(date) > $STAMPFILE
 else
 	echo "FINALIZADO CON ERRORES, log: $LOGFILE" >> $LOGFILE
 fi
